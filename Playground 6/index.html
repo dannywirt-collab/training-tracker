@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Training & Recovery Tracker</title>
+    <meta name="theme-color" content="#155e63" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="TrainTrack" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/app-icon.svg" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Training & Recovery Tracker</h1>
+      <p>Track health, performance, and progression with daily logs and trend dashboards.</p>
+    </header>
+
+    <main class="layout">
+      <section class="card form-card">
+        <h2>Daily Log</h2>
+        <form id="entry-form">
+          <div class="grid">
+            <label>
+              Date
+              <input type="date" id="date" required />
+            </label>
+            <label>
+              Training Type
+              <select id="trainingType">
+                <option value="">Auto Detect</option>
+                <option value="swim">Swim</option>
+                <option value="strength">Strength</option>
+                <option value="run">Run</option>
+                <option value="cycle">Cycle</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label>
+              Body Weight (lb)
+              <input type="number" id="bodyWeight" min="0" step="0.1" required />
+            </label>
+            <label>
+              Sleep (hours)
+              <input type="number" id="sleepHours" min="0" max="24" step="0.1" required />
+            </label>
+            <label>
+              Resting HR (bpm)
+              <input type="number" id="restingHr" min="20" max="200" step="1" required />
+            </label>
+            <label>
+              Readiness (1-10)
+              <input type="number" id="readiness" min="1" max="10" step="1" required />
+            </label>
+            <label>
+              Training Load
+              <input type="number" id="trainingLoad" min="0" step="1" required />
+            </label>
+            <label>
+              Soreness (1-10)
+              <input type="number" id="soreness" min="1" max="10" step="1" required />
+            </label>
+            <label>
+              Mood (1-10)
+              <input type="number" id="mood" min="1" max="10" step="1" required />
+            </label>
+          </div>
+
+          <section class="subsection">
+            <div class="section-title-row">
+              <h3>Custom Metrics</h3>
+              <span class="muted-small">Define custom fields in the panel below</span>
+            </div>
+            <div class="grid" id="custom-metric-inputs"></div>
+          </section>
+
+          <section class="subsection">
+            <div class="section-title-row">
+              <h3>Exercise Log</h3>
+              <button type="button" class="secondary small-btn" id="add-exercise">+ Add Exercise</button>
+            </div>
+            <div id="exercise-list" class="list-stack"></div>
+          </section>
+
+          <section class="subsection">
+            <div class="section-title-row">
+              <h3>PR Tracker</h3>
+              <button type="button" class="secondary small-btn" id="add-pr">+ Add PR</button>
+            </div>
+            <div id="pr-list" class="list-stack"></div>
+          </section>
+
+          <label>
+            Notes
+            <textarea id="notes" rows="3" placeholder="Session details, stress, nutrition, etc."></textarea>
+          </label>
+
+          <div class="form-actions">
+            <button type="submit" id="submit-btn">Save Entry</button>
+            <button type="button" class="secondary" id="reset-btn">Reset</button>
+          </div>
+          <input type="hidden" id="edit-id" />
+        </form>
+      </section>
+
+      <section class="card metrics-card">
+        <div class="section-title-row">
+          <h2>Custom Metric Definitions</h2>
+        </div>
+        <form id="metric-form" class="grid metric-grid">
+          <label>
+            Metric Name
+            <input type="text" id="metric-name" placeholder="e.g. HRV" required />
+          </label>
+          <label>
+            Unit
+            <input type="text" id="metric-unit" placeholder="e.g. ms" />
+          </label>
+          <label>
+            Decimals
+            <input type="number" id="metric-decimals" min="0" max="3" value="1" />
+          </label>
+          <div class="metric-actions">
+            <button type="submit">Add Metric</button>
+          </div>
+        </form>
+        <div id="custom-metric-tags" class="chip-row"></div>
+      </section>
+
+      <section class="card dashboard-card">
+        <div class="table-header">
+          <h2>Dashboard</h2>
+          <label>
+            View
+            <select id="dashboard-range">
+              <option value="7">Weekly (Last 7 Days)</option>
+              <option value="30">Monthly (Last 30 Days)</option>
+            </select>
+          </label>
+        </div>
+        <div id="dashboard-stats" class="stats"></div>
+      </section>
+
+      <section class="card stats-card">
+        <h2>Quick Stats (Last 7 Entries)</h2>
+        <div class="stats" id="stats"></div>
+      </section>
+
+      <section class="card charts-card">
+        <h2>Trends</h2>
+        <div class="chart-grid" id="chart-grid"></div>
+      </section>
+
+      <section class="card pr-card">
+        <h2>Best PRs</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Exercise</th>
+                <th>Best Value</th>
+                <th>Date</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody id="best-pr-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card table-card">
+        <div class="table-header">
+          <h2>History</h2>
+          <div class="table-actions">
+            <button id="export-csv">Export CSV</button>
+            <label class="secondary upload-label">
+              Import CSV (Any)
+              <input type="file" id="import-csv" accept=".csv,text/csv" hidden />
+            </label>
+            <label class="secondary upload-label">
+              Import FIT
+              <input type="file" id="import-fit" accept=".fit,application/octet-stream" multiple hidden />
+            </label>
+            <button class="danger" id="clear-all">Clear All</button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Weight</th>
+                <th>Sleep</th>
+                <th>RHR</th>
+                <th>Readiness</th>
+                <th>Load</th>
+                <th>Custom</th>
+                <th>Exercises</th>
+                <th>PRs</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="entries-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <template id="chart-template">
+      <article class="chart-card">
+        <h3></h3>
+        <canvas width="520" height="220"></canvas>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+    <script src="pwa.js"></script>
+  </body>
+</html>
